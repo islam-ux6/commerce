@@ -13,11 +13,6 @@
                 </div>
                 <div>
                     <a href="{% url 'listing' listing.id %}"><h2>{{ listing.title }}</h2></a>
-                    {% if listing.bids %}
-                    <h3>${{ listing.bids }}</h3>
-                    {% else %}
-                        <h3>${{ listing.min_bid }}</h3>
-                    {% endif %}
                     <p>{{ listing.description }}</p>
                 </div>
             </div>

@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 
-from .models import User, Listing
+from .models import User, Listing, Bid
 
 
 def index(request):
@@ -84,6 +84,12 @@ def create_listing(request):
     return render(request, "auctions/create.html")
 
 def listing(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    current_price = listing.bids.get().amount
     return render(request, "auctions/listing.html", {
-        
+        "listing": listing,
+        "price": current_price
     })
+
+def bid(request, listing_id):
+    pass
