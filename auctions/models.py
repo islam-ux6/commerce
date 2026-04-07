@@ -12,3 +12,8 @@ class Listing(models.Model):
     starting_bid = models.IntegerField()
     image = models.CharField(blank=True)
     category = models.CharField(max_length=64, blank=True)
+
+class Bid(models.Model):
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="bids")
+    bidder = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bids")
+    amount = models.IntegerField()

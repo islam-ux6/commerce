@@ -3,9 +3,9 @@
 {% block body %}
     <form action="{% url 'create_listing' %}" method="post">
         {% csrf_token %}
-        <input type="text" name="title" placeholder="Title">
-        <textarea name="description" placeholder="Description"></textarea>
-        <input type="number" name="min_bid" placeholder="Min Bid">
+        <input type="text" name="title" placeholder="Title" required>
+        <textarea name="description" placeholder="Description" required></textarea>
+        <input type="number" name="min_bid" placeholder="Min Bid" required>
         <input type="text" name="image" placeholder="Url to your image">
         <input type="text" name="category" placeholder="Category">
         <input type="submit" value="Create">

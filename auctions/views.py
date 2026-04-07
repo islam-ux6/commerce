@@ -9,7 +9,11 @@ from .models import User, Listing
 
 
 def index(request):
-    return render(request, "auctions/index.html")
+    listings = Listing.objects.all()
+
+    return render(request, "auctions/index.html", {
+        "listings": listings
+    })
 
 
 def login_view(request):
@@ -78,3 +82,8 @@ def create_listing(request):
 
         return HttpResponseRedirect(reverse("index"))
     return render(request, "auctions/create.html")
+
+def listing(request, listing_id):
+    return render(request, "auctions/listing.html", {
+        
+    })
