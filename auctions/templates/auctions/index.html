@@ -13,6 +13,11 @@
                 </div>
                 <div>
                     <a href="{% url 'listing' listing.id %}"><h2>{{ listing.title }}</h2></a>
+                    {% if listing.bids.get.amount %}
+                        <h3>Price: ${{ listing.bids.get.amount }}</h3>
+                    {% else %}
+                        <h3>Price: No Bids</h3>
+                    {% endif %}
                     <p>{{ listing.description }}</p>
                 </div>
             </div>

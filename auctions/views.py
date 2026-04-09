@@ -11,6 +11,8 @@ from .models import User, Listing, Bid
 def index(request):
     listings = Listing.objects.all()
 
+
+
     return render(request, "auctions/index.html", {
         "listings": listings
     })
@@ -85,11 +87,52 @@ def create_listing(request):
 
 def listing(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
-    current_price = listing.bids.get().amount
+
     return render(request, "auctions/listing.html", {
         "listing": listing,
-        "price": current_price
     })
 
+@login_required(login_url="/login")
 def bid(request, listing_id):
-    pass
+    if request.method == "POST":
+        listing = Listing.objects.get(pk=listing_id)
+        new_bid = int(request.POST["bid"])
+        user = request.user
+        try:
+            bid = listing.bids.get()
+        except:
+            if new_bid >= listing.starting_bid:
+                bid = Bid(listing=listing, bidder=user, amount=new_bid)
+            else:
+                return render(request, "auctions/listing.html", {
+                    "listing": listing,
+                    "message": "Not appropriate bid"
+                })
+        else:
+            if new_bid >= bid.amount + listing.starting_bid:
+                bid.amount = new_bid
+                bid.bidder = user
+            else:
+                return render(request, "auctions/listing.html", {
+                    "listing": listing,
+                    "message": "Not appropriate bid"
+                })
+        bid.save()
+    return HttpResponseRedirect(reverse('listing', args=[listing_id]))
+
+@login_required
+def watchlist(request):
+    user = request.user
+    if request.method == "POST":
+        listing_id = request.POST["listing_id"]
+        listing = Listing.objects.get(pk=listing_id)
+
+        if listing in user.watchlist.all():
+            user.watchlist.remove(listing)
+        else:
+            user.watchlist.add(listing)
+        return HttpResponseRedirect(reverse('listing', args=[listing_id]))
+    else:
+        return render(request, "auctions/index.html", {
+            "listings": user.watchlist.all()
+        })

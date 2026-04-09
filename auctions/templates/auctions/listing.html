@@ -3,18 +3,48 @@
 {% block body %}
     <h2>Listing: {{ listing.title }}</h2>
 
+    <form action="{% url 'watchlist' %}" method="post">
+        {% csrf_token %}
+        <input type="hidden" name="listing_id", value="{{ listing.id }}">
+        <input type="submit" value="WatchList">
+    </form>
+
     {% if listing.image %}
-        <img src="{{ listing.image}}">
+        <img src="{{ listing.image }}" id="listing-image">
     {% endif %}
 
     <p>{{ listing.description }}</p>
 
-    <p>${{ price }}</p>
+    {% if listing.bids.get.amount %}
+        <h3>${{ listing.bids.get.amount }}</h3>
+    {% else %}
+        <h3>Price: No Bids</h3>
+    {% endif %}
+
+    <p>Minimum bid: {{ listing.starting_bid }}</p>
+    {% if listing.bids.get.bidder %}
+        <p>Current Bidder: {{ listing.bids.get.bidder }}</p>
+    {% else %}
+        <p>Current Bidder: No Bidders</p>
+    {% endif %}
 
     <form action="{% url 'bid' listing.id %}" method="post">
         {% csrf_token %}
-        <input type="text" name="bid" placeholder="Bid">
+        <input type="number" name="bid" placeholder="Bid">
         <input type="submit" value="Place Bid">
     </form>
 
+    {% if message %}
+        <p>{{ message }}</p>
+    {% endif %}
+
+    <h3>Details:</h3>
+    <ul>
+        <li>Listed by: {{ listing.creator }}</li>
+        {% if listing.category %}
+            <li>Category: {{ listing.category }}
+        {% else %}
+            <li>Category: No Category Listed</li>
+        {% endif %}
+    </ul>
 {% endblock %}
