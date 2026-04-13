@@ -3,11 +3,23 @@
 {% block body %}
     <h2>Listing: {{ listing.title }}</h2>
 
-    <form action="{% url 'watchlist' %}" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="listing_id", value="{{ listing.id }}">
-        <input type="submit" value="WatchList">
-    </form>
+    {% if listing.is_active %}
+        <form action="{% url 'watchlist' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="listing_id", value="{{ listing.id }}">
+            <input type="submit" value="WatchList">
+        </form>
+    {% endif %}
+
+    {% if listing.is_active %}
+        {% if creator %}
+            <form action="{% url 'listing' listing.id %}" method="post">
+                {% csrf_token %}
+                <input type="hidden" name="activate" value=True>
+                <input type="submit" value="Close">
+            </form>
+        {% endif %}
+     {% endif %}
 
     {% if listing.image %}
         <img src="{{ listing.image }}" id="listing-image">
@@ -15,28 +27,39 @@
 
     <p>{{ listing.description }}</p>
 
-    {% if listing.bids.get.amount %}
-        <h3>${{ listing.bids.get.amount }}</h3>
-    {% else %}
-        <h3>Price: No Bids</h3>
-    {% endif %}
+    {% if listing.is_active %}
+        {% if listing.bids.get.amount %}
+            <h3>${{ listing.bids.get.amount }}</h3>
+        {% else %}
+            <h3>Price: No Bids</h3>
+        {% endif %}
 
-    <p>Minimum bid: {{ listing.starting_bid }}</p>
-    {% if listing.bids.get.bidder %}
-        <p>Current Bidder: {{ listing.bids.get.bidder }}</p>
-    {% else %}
-        <p>Current Bidder: No Bidders</p>
-    {% endif %}
+        <p>Minimum bid: {{ listing.starting_bid }}</p>
+        {% if listing.bids.get.bidder %}
+            <p>Current Bidder: {{ listing.bids.get.bidder }}</p>
+        {% else %}
+            <p>Current Bidder: No Bidders</p>
+        {% endif %}
 
-    <form action="{% url 'bid' listing.id %}" method="post">
-        {% csrf_token %}
-        <input type="number" name="bid" placeholder="Bid">
-        <input type="submit" value="Place Bid">
-    </form>
+        <form action="{% url 'bid' listing.id %}" method="post">
+            {% csrf_token %}
+            <input type="number" name="bid" placeholder="Bid">
+            <input type="submit" value="Place Bid">
+        </form>
+    {% else%}
+        <h2>Status: Close</h2>
+        {% if user == winner %}
+            <h3>The Winner is You</h3>
+        {% else %}
+            <h3> The Winner is {{ winner }}</h3>
+        {% endif %}
+    {% endif %}
 
     {% if message %}
         <p>{{ message }}</p>
     {% endif %}
+
+    <hr>
 
     <h3>Details:</h3>
     <ul>
@@ -47,4 +70,24 @@
             <li>Category: No Category Listed</li>
         {% endif %}
     </ul>
+
+    <hr>
+    
+    {% if user.is_authenticated %}
+        <form action="{% url 'add_comment' listing.id %}" method="post">
+            {% csrf_token %}
+            <textarea name="comment_content" placeholder="Enter your comment" required></textarea>
+            <input type="submit" value="Submit">
+        </form>
+    {% endif %}
+    
+    <h3>Comments:</h3>
+    {% if comments %}
+        {% for comment in comments %}
+            <h4>{{comment.user}}</h4>
+            <p>{{ comment.comment }}</p>
+        {% endfor %}
+    {% else %}
+        <p>No comments</p>
+    {% endif %}
 {% endblock %}

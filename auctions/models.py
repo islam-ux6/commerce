@@ -10,6 +10,7 @@ class Listing(models.Model):
     starting_bid = models.IntegerField()
     image = models.CharField(blank=True)
     category = models.CharField(max_length=64, blank=True)
+    is_active = models.BooleanField(default=True)
 
 class User(AbstractUser):
     watchlist = models.ManyToManyField("Listing", blank=True, related_name="watchlists")
@@ -19,3 +20,8 @@ class Bid(models.Model):
     listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="bids")
     bidder = models.ForeignKey(User, on_delete=models.CASCADE, related_name="bids")
     amount = models.IntegerField()
+
+class Comment(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comment")
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="comment")
+    comment = models.CharField(max_length=512)

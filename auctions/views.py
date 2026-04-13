@@ -5,7 +5,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse, reverse_lazy
 
-from .models import User, Listing, Bid
+from .models import User, Listing, Bid, Comment
 
 
 def index(request):
@@ -87,10 +87,24 @@ def create_listing(request):
 
 def listing(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
+    try:
+        bid = listing.bids.get()
+        comments = listing.comment.all()
+    except:
+        bid = None
+        comments = None
 
-    return render(request, "auctions/listing.html", {
-        "listing": listing,
-    })
+    if request.method == "POST":
+        listing.is_active = False
+        listing.save()
+        return HttpResponseRedirect(reverse('index'))
+    else:
+        return render(request, "auctions/listing.html", {
+            "listing": listing,
+            "creator": True if request.user == listing.creator else False,
+            "winner": bid.bidder if bid else None,
+            "comments": comments
+        })
 
 @login_required(login_url="/login")
 def bid(request, listing_id):
@@ -135,4 +149,30 @@ def watchlist(request):
     else:
         return render(request, "auctions/index.html", {
             "listings": user.watchlist.all()
+        })
+    
+def add_comment(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    user = request.user
+    if request.method == "POST":
+        comment_content = request.POST["comment_content"]
+        if not comment_content:
+            return HttpResponseRedirect(reverse('listing', args=[listing_id]))
+        
+        comment = Comment(user=user, listing=listing, comment=comment_content)
+        comment.save()
+        return HttpResponseRedirect(reverse('listing', args=[listing_id]))
+    else:
+        return HttpResponseRedirect(reverse("index"))
+    
+def category(request, category_name=None):
+    listings = Listing.objects.all()
+    categories = set([x.category for x in listings if x.category != "" and x.is_active])
+    if category_name:
+        return render(request, "auctions/category.html", {
+            "listings": [x for x in listings if x.category == category_name]
+        })
+    else:
+        return render(request, "auctions/category.html", {
+            "categories": categories
         })
